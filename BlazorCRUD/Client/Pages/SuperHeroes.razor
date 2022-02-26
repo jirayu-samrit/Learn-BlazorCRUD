@@ -1,0 +1,78 @@
+﻿@page "/superheroes"
+@inject ISuperHeroService SuperHeroService
+@inject NavigationManager Navigation
+@implements IDisposable
+
+<h3>SuperHeroes</h3>
+
+@if(SuperHeroService.Heroes==null || SuperHeroService.Heroes.Count==0)
+{
+	<span>Loading Super Heroes...</span>
+}
+else
+{
+	<table class="table">
+		<thead>
+			<th>First Name</th>
+			<th>Last Name</th>
+			<th>Hero Name</th>
+			<th>Comic</th>
+			<th></th>
+			<th></th>
+			<th></th>
+		</thead>
+		<tbody>
+			@foreach(BlazorCRUD.Shared.SuperHero  hero in SuperHeroService.Heroes)
+			{
+				<tr>
+					<td>@hero.FirstName</td>
+					<td>@hero.LastName</td>
+					<td>@hero.HeroName</td>
+					<td>@hero.Comic.Name</td>
+					<td>
+						<button class="btn btn-primary" @onclick="()=>ShowHero(hero.Id)">Detail</button>
+					</td>
+					<td>
+						<button class="btn btn-primary" @onclick="()=>EditHero(hero.Id)">Edit</button>
+					</td>
+					<td>
+						<button class="btn btn-primary" @onclick="()=>DeleteHero(hero.Id)">Delete</button>
+					</td>
+				</tr>
+			}
+		</tbody>
+	</table>
+
+}
+	<EditSuperHero Hero=heroToEdit></EditSuperHero>
+
+@code {
+	BlazorCRUD.Shared.SuperHero heroToEdit = new BlazorCRUD.Shared.SuperHero();
+
+
+	protected override async Task OnInitializedAsync()
+	{
+		await SuperHeroService.GetSuperHeroes();
+		SuperHeroService.OnChange += StateHasChanged;
+	}
+
+	void ShowHero(int id)
+	{
+		Navigation.NavigateTo($"superhero/{id}");
+	}
+
+	void EditHero(int id)
+	{
+		heroToEdit = SuperHeroService.Heroes.FirstOrDefault(h=>h.Id == id);
+	}
+	async void DeleteHero(int id)
+	{
+		await SuperHeroService.DeleteSuperHero(id);
+	}
+
+	public void Dispose()
+	{
+		SuperHeroService.OnChange -= StateHasChanged;
+	}
+}
+
